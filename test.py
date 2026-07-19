@@ -1,5 +1,16 @@
-from PIL import Image
-import torch
+"""Check that the local Edge AI Python dependencies are installed."""
 
-print("Pillow:", Image)
-print("Torch:", torch.__version__)
+import torch
+from PIL import __version__ as pillow_version
+import torchvision
+
+
+def main() -> None:
+    print("Environment is ready:")
+    print(f"  PyTorch: {torch.__version__}")
+    print(f"  TorchVision: {torchvision.__version__}")
+    print(f"  Pillow: {pillow_version}")
+
+
+if __name__ == "__main__":
+    main()
