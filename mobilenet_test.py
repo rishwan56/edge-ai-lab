@@ -8,36 +8,36 @@ from PIL import Image
 
 weights = models.MobileNet_V2_Weights.DEFAULT
 model = models.mobilenet_v2(weights=weights)
-
 model.eval()
 
-image = Image.open("images/whatsappimage.jpeg")
+# 3. Load image and ensure it has 3 channels (RGB)
+image_path = "images/apple.png"
+image = Image.open(image_path).convert("RGB")
 
-preprocess = transforms.Compose([
-    transforms.Resize((224, 224)),
-    transforms.ToTensor(),
-    transforms.Normalize(
-        mean=[0.485, 0.456, 0.406],
-        std=[0.229, 0.224, 0.225]
-    )
-]) 
+# 4. Define preprocessing pipeline
+preprocess = weights.transforms()
 
+resized = transforms.Resize((224, 224))(image)
+resized.show() 
+
+
+# 5. Preprocess the image
 input_tensor = preprocess(image)
-
 input_batch = input_tensor.unsqueeze(0)
-#print(input_batch.shape)
 
+# 6. Perform inference without tracking gradients
 with torch.no_grad():
     output = model(input_batch)
-predicted_index = output.argmax(dim=1).item()
 
-print(predicted_index)
-
-categories = weights.meta["categories"]
-predicted_label = categories[predicted_index]
+# 7. Convert output logits to probabilities via softmax
 probabilities = torch.nn.functional.softmax(output[0], dim=0)
 
+# 8. Retrieve categories and display Top 5 predictions
+categories = weights.meta["categories"]
 top5_prob, top5_catid = torch.topk(probabilities, 5)
 
-for prob, idx in zip(top5_prob, top5_catid):
-    print(f"{categories[idx]} : {prob.item()*100:.2f}%")
+print("\nTop 5 Predictions:")
+for i in range(top5_prob.size(0)):
+    category = categories[top5_catid[i]]
+    percentage = top5_prob[i].item() * 100
+    print(f"{category:<25} {percentage:.2f}%")
