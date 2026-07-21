@@ -13,7 +13,7 @@ model = models.efficientnet_v2_s(weights=weights)
 model.eval()
 
 # 2. Load image and ensure RGB channels
-image_path = "images/iphone.png"
+image_path = "images/mouse/mouse1.png"
 if not os.path.exists(image_path):
     # Fallback if specific screenshot is missing
     image_path = "images/Passport_Size_photo_rishwan.jpg"
