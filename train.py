@@ -28,7 +28,7 @@ class KeyboardMouseDataset(Dataset):
         print(f"Found {len(self.samples)} total images.")
 
 class ImageDataset(Dataset):
-    def __init__(self, samples, transform=None):
+    def __init__(self, samples, transform=None): 
         self.samples = samples
         self.transform = transform
 
