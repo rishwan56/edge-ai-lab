@@ -40,14 +40,10 @@ def main():
         dummy_input,                    # model input (dummy tensor)
         onnx_path,                      # where to save the model
         export_params=True,             # store the trained weights inside the model file
-        opset_version=12,               # the ONNX opset version to target
+        opset_version=18,               # the ONNX opset version to target (matches current PyTorch version)
         do_constant_folding=True,       # optimize model by folding constant nodes
         input_names=["input"],          # the model's input name
-        output_names=["output"],        # the model's output name
-        dynamic_axes={                  # enable variable batch size
-            "input": {0: "batch_size"},
-            "output": {0: "batch_size"}
-        }
+        output_names=["output"]         # the model's output name
     )
     
     print("Export successful!")

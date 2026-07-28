@@ -10,7 +10,12 @@ if hasattr(sys.stdout, 'reconfigure'):
 import onnxruntime as ort
 
 def main():
-    onnx_path = "mobilenet_v2_keyboard_mouse.onnx"
+    onnx_path = "mobilenet_v2_keyboard_mouse_quantized.onnx"
+    if len(sys.argv) > 1:
+        onnx_path = sys.argv[1]
+    elif not os.path.exists(onnx_path):
+        onnx_path = "mobilenet_v2_keyboard_mouse.onnx"
+        
     if not os.path.exists(onnx_path):
         print(f"Error: ONNX model file '{onnx_path}' not found.")
         return
