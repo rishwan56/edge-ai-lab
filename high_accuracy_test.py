@@ -25,7 +25,7 @@ preprocess = weights.transforms()
 
 # Optional: preview resized visualization
 resized = transforms.Resize((224, 224))(image)
-resized.show()
+#resized.show()
 
 # 4. Preprocess the image
 input_tensor = preprocess(image)
