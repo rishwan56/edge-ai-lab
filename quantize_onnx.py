@@ -9,10 +9,17 @@ from onnxruntime.quantization import quantize_dynamic, QuantType
 from onnxruntime.quantization.shape_inference import quant_pre_process
 
 def main():
-    input_model = "mobilenet_v2_keyboard_mouse.onnx"
-    preprocessed_model = "mobilenet_v2_keyboard_mouse_preprocessed.onnx"
-    output_model = "mobilenet_v2_keyboard_mouse_quantized.onnx"
-    
+    input_model = "mobilenet_v2_keyboard_mouse_best.onnx"
+    if not os.path.exists(input_model):
+        input_model = "mobilenet_v2_keyboard_mouse.onnx"
+        
+    if "best" in input_model:
+        preprocessed_model = "mobilenet_v2_keyboard_mouse_best_preprocessed.onnx"
+        output_model = "mobilenet_v2_keyboard_mouse_best_quantized.onnx"
+    else:
+        preprocessed_model = "mobilenet_v2_keyboard_mouse_preprocessed.onnx"
+        output_model = "mobilenet_v2_keyboard_mouse_quantized.onnx"
+        
     if not os.path.exists(input_model):
         print(f"Error: Base ONNX model '{input_model}' not found. Please run export_onnx.py first.")
         return

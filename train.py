@@ -111,6 +111,15 @@ def main():
     
     # 4. Training loop
     num_epochs = 15
+    train_losses = []
+    train_accs = []
+    val_losses = []
+    val_accs = []
+    
+    best_val_acc = 0.0
+    best_val_loss = float('inf')
+    best_epoch = 0
+    
     for epoch in range(num_epochs):
         model.train()
         train_loss = 0.0
@@ -134,6 +143,9 @@ def main():
         epoch_train_loss = train_loss / total_train
         epoch_train_acc = correct_train / total_train
         
+        train_losses.append(epoch_train_loss)
+        train_accs.append(epoch_train_acc)
+        
         # Validation
         model.eval()
         val_loss = 0.0
@@ -153,14 +165,87 @@ def main():
         epoch_val_loss = val_loss / total_val
         epoch_val_acc = correct_val / total_val
         
+        val_losses.append(epoch_val_loss)
+        val_accs.append(epoch_val_acc)
+        
         print(f"Epoch {epoch+1:02d}/{num_epochs:02d} | "
               f"Train Loss: {epoch_train_loss:.4f} Acc: {epoch_train_acc*100:5.1f}% | "
               f"Val Loss: {epoch_val_loss:.4f} Acc: {epoch_val_acc*100:5.1f}%")
               
-    # 5. Save the trained model weights
+        # Check if validation accuracy is better, or if accuracy is the same but loss is lower
+        is_best = False
+        if epoch_val_acc > best_val_acc:
+            is_best = True
+        elif epoch_val_acc == best_val_acc and epoch_val_loss < best_val_loss:
+            is_best = True
+            
+        if is_best:
+            best_val_acc = epoch_val_acc
+            best_val_loss = epoch_val_loss
+            best_epoch = epoch + 1
+            torch.save(model.state_dict(), "mobilenet_v2_keyboard_mouse_best.pth")
+            print(f"  --> Best model updated and saved (Val Acc: {best_val_acc*100:.1f}%, Val Loss: {best_val_loss:.4f})")
+               
+    # 5. Save the trained model weights, metrics and plots
+    import json
+    import matplotlib.pyplot as plt
+    
+    # Save final epoch checkpoint
     save_path = "mobilenet_v2_keyboard_mouse.pth"
     torch.save(model.state_dict(), save_path)
-    print(f"Model checkpoint saved to {save_path}")
+    print(f"\nFinal model checkpoint saved to {save_path}")
+    print(f"Best model checkpoint was saved to mobilenet_v2_keyboard_mouse_best.pth at epoch {best_epoch} with Val Acc: {best_val_acc*100:.1f}%")
+
+    # Plot loss and accuracy curves
+    epochs = range(1, num_epochs + 1)
+    plt.figure(figsize=(12, 5))
+    
+    # Plot Loss
+    plt.subplot(1, 2, 1)
+    plt.plot(epochs, train_losses, 'b-o', label='Train Loss')
+    plt.plot(epochs, val_losses, 'r-o', label='Val Loss')
+    plt.title('Training and Validation Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.grid(True)
+    plt.legend()
+    
+    # Plot Accuracy
+    plt.subplot(1, 2, 2)
+    plt.plot(epochs, [acc * 100 for acc in train_accs], 'b-o', label='Train Acc')
+    plt.plot(epochs, [acc * 100 for acc in val_accs], 'r-o', label='Val Acc')
+    plt.title('Training and Validation Accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy (%)')
+    plt.grid(True)
+    plt.legend()
+    
+    plt.tight_layout()
+    plot_path = "training_history.png"
+    plt.savefig(plot_path)
+    plt.close()
+    print(f"Training curves saved to {plot_path}")
+    
+    # Save metrics JSON
+    metrics = {
+        "num_epochs": num_epochs,
+        "best_epoch": best_epoch,
+        "best_val_accuracy": best_val_acc,
+        "best_val_loss": best_val_loss,
+        "final_train_loss": train_losses[-1],
+        "final_train_accuracy": train_accs[-1],
+        "final_val_loss": val_losses[-1],
+        "final_val_accuracy": val_accs[-1],
+        "train_loss_history": train_losses,
+        "train_accuracy_history": train_accs,
+        "val_loss_history": val_losses,
+        "val_accuracy_history": val_accs
+    }
+    
+    metrics_path = "metrics.json"
+    with open(metrics_path, "w") as f:
+        json.dump(metrics, f, indent=4)
+    print(f"Metrics saved to {metrics_path}")
 
 if __name__ == "__main__":
     main()

@@ -19,7 +19,10 @@ def main():
     model.classifier[1] = nn.Linear(num_features, 2)
     
     # 2. Load model weights
-    weights_path = "mobilenet_v2_keyboard_mouse.pth"
+    weights_path = "mobilenet_v2_keyboard_mouse_best.pth"
+    if not os.path.exists(weights_path):
+        weights_path = "mobilenet_v2_keyboard_mouse.pth"
+        
     if not os.path.exists(weights_path):
         print(f"Error: Trained model weights '{weights_path}' not found.")
         return
@@ -32,7 +35,7 @@ def main():
     dummy_input = torch.randn(1, 3, 224, 224)
     
     # 4. Export to ONNX format
-    onnx_path = "mobilenet_v2_keyboard_mouse.onnx"
+    onnx_path = "mobilenet_v2_keyboard_mouse_best.onnx" if "best" in weights_path else "mobilenet_v2_keyboard_mouse.onnx"
     print(f"Exporting model to ONNX format at '{onnx_path}'...")
     
     torch.onnx.export(
