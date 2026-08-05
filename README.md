@@ -47,3 +47,32 @@ This repository documents the development, training, optimization, and deploymen
 - [export_onnx.py](file:///c:/rishwan/Projects/edge-ai-lab/export_onnx.py): Script to convert `.pth` to `.onnx`.
 - [quantize_onnx.py](file:///c:/rishwan/Projects/edge-ai-lab/quantize_onnx.py): Script to quantize ONNX model to 8-bit integers.
 - [test_onnx.py](file:///c:/rishwan/Projects/edge-ai-lab/test_onnx.py): ONNX Runtime verification script.
+
+---
+
+## 💻 How to Run
+
+1. **Install Dependencies**:
+   ```bash
+   pip install torch torchvision pillow onnx onnxruntime matplotlib
+   ```
+
+2. **Train the Model**:
+   ```bash
+   python train.py
+   ```
+
+3. **Export to ONNX**:
+   ```bash
+   python export_onnx.py
+   ```
+
+4. **Quantize the Model**:
+   ```bash
+   python quantize_onnx.py
+   ```
+
+5. **Run Inference**:
+   ```bash
+   python test_onnx.py
+   ```
