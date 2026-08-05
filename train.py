@@ -9,6 +9,10 @@ from PIL import Image
 
 # 1. Custom Dataset classes
 class KeyboardMouseDataset(Dataset):
+    """
+    Dataset class to scan the root directory and locate keyboard and mouse images.
+    It maps class names to indices and builds a list of image path and label tuples.
+    """
     def __init__(self, root_dir):
         self.root_dir = root_dir
         self.classes = ['keyboard', 'mouse']
@@ -28,6 +32,10 @@ class KeyboardMouseDataset(Dataset):
         print(f"Found {len(self.samples)} total images.")
 
 class ImageDataset(Dataset):
+    """
+    A PyTorch Dataset that loads images on-the-fly from given sample paths 
+    and applies torchvision transforms.
+    """
     def __init__(self, samples, transform=None): 
         self.samples = samples
         self.transform = transform
@@ -88,6 +96,7 @@ def main():
     print("Loading pre-trained MobileNetV2...")
     weights = models.MobileNet_V2_Weights.DEFAULT
     model = models.mobilenet_v2(weights=weights)
+    print("model : ", model)
     
     # Freeze feature extraction layers
     for param in model.features.parameters():
