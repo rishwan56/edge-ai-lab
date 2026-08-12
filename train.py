@@ -95,11 +95,10 @@ def main():
     # 3. Load pre-trained MobileNetV2
     print("Loading pre-trained MobileNetV2...")
     weights = models.MobileNet_V2_Weights.DEFAULT
-    model = models.mobilenet_v2(weights=weights)
-    print("model : ", model)
+    model = models.mobilenet_v2(weights=weights)    
     
     # Freeze feature extraction layers
-    for param in model.features.parameters():
+    for param in model.features.parameters():1
         param.requires_grad = False
         
     # Replace the classifier layer
