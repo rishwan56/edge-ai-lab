@@ -193,7 +193,12 @@ def main():
             best_epoch = epoch + 1
             torch.save(model.state_dict(), "mobilenet_v2_keyboard_mouse_best.pth")
             print(f"  --> Best model updated and saved (Val Acc: {best_val_acc*100:.1f}%, Val Loss: {best_val_loss:.4f})")
-               
+
+    print("train_losses : ", train_losses)
+    print("train_accs : ", train_accs)
+    print("val_losses : ", val_losses)
+    print("val_accs : ", val_accs)
+
     # 5. Save the trained model weights, metrics and plots
     import json
     import matplotlib.pyplot as plt
