@@ -195,6 +195,7 @@ def main():
             print(f"  --> Best model updated and saved (Val Acc: {best_val_acc*100:.1f}%, Val Loss: {best_val_loss:.4f})")
 
     print("train_losses : ", train_losses)
+    print("size of train_loss : ", len(train_losses))
     print("train_accs : ", train_accs)
     print("val_losses : ", val_losses)
     print("val_accs : ", val_accs)
