@@ -32,9 +32,9 @@ This repository documents the development, training, optimization, and deploymen
 
 ## ⏳ Pending Tasks & Next Steps
 
-- [ ] **Transfer to Edge Device**: Move optimized `.onnx` models and validation scripts to a physical edge device (e.g. Raspberry Pi).
-- [ ] **Live Camera Feed Application**: Write a script utilizing OpenCV and ONNX Runtime to perform real-time classification on the Raspberry Pi camera module.
-- [ ] **On-Device Incremental Learning**: Implement the local training loop (e.g. KNN on extracted 1280-D embeddings or single-layer SGD updates) to allow the model to learn new objects directly on the edge.
+- [x] **Transfer to Edge Device**: Created lightweight `requirements_pi.txt`, `benchmark_pi.py`, and `pi_camera_test.py` for direct deployment onto Raspberry Pi.
+- [x] **Live Camera Feed Application**: Implemented `pi_camera_test.py` utilizing OpenCV and ONNX Runtime to perform real-time classification with live HUD stats.
+- [ ] **On-Device Incremental Learning**: Implement local training loop (e.g. KNN or classifier fine-tuning on top of extracted embeddings) directly on device.
 
 ---
 
@@ -46,33 +46,43 @@ This repository documents the development, training, optimization, and deploymen
 - [test_fine_tuned.py](file:///c:/rishwan/Projects/edge-ai-lab/test_fine_tuned.py): Verification of custom PyTorch checkpoint.
 - [export_onnx.py](file:///c:/rishwan/Projects/edge-ai-lab/export_onnx.py): Script to convert `.pth` to `.onnx`.
 - [quantize_onnx.py](file:///c:/rishwan/Projects/edge-ai-lab/quantize_onnx.py): Script to quantize ONNX model to 8-bit integers.
-- [test_onnx.py](file:///c:/rishwan/Projects/edge-ai-lab/test_onnx.py): ONNX Runtime verification script.
+- [test_onnx.py](file:///c:/rishwan/Projects/edge-ai-lab/test_onnx.py): ONNX Runtime verification script on single image.
+- [evaluate_onnx.py](file:///c:/rishwan/Projects/edge-ai-lab/evaluate_onnx.py): Batch accuracy verification across image sets.
+- [benchmark_pi.py](file:///c:/rishwan/Projects/edge-ai-lab/benchmark_pi.py): Edge device performance & latency benchmarking tool.
+- [pi_camera_test.py](file:///c:/rishwan/Projects/edge-ai-lab/pi_camera_test.py): Real-time live camera classification with HUD overlay.
+- [requirements_pi.txt](file:///c:/rishwan/Projects/edge-ai-lab/requirements_pi.txt): Minimal dependencies for Raspberry Pi.
 
 ---
 
-## 💻 How to Run
+## 🍓 Raspberry Pi Deployment Guide
 
-1. **Install Dependencies**:
-   ```bash
-   pip install torch torchvision pillow onnx onnxruntime matplotlib
-   ```
+### 1. Transfer Files to Raspberry Pi
+From your development PC (PowerShell / Command Prompt / Git Bash):
+```bash
+# Replace 'pi' with your Raspberry Pi username and 'raspberrypi.local' with your Pi IP/hostname
+scp -r mobilenet_v2_keyboard_mouse_best_quantized.onnx mobilenet_v2_keyboard_mouse_best.onnx* images benchmark_pi.py pi_camera_test.py requirements_pi.txt pi@raspberrypi.local:~/edge-ai-lab/
+```
 
-2. **Train the Model**:
-   ```bash
-   python train.py
-   ```
+### 2. Setup Environment on Raspberry Pi
+SSH into your Raspberry Pi:
+```bash
+ssh pi@raspberrypi.local
+cd ~/edge-ai-lab
 
-3. **Export to ONNX**:
-   ```bash
-   python export_onnx.py
-   ```
+# Create and activate Python virtual environment
+python3 -m venv venv
+source venv/bin/activate
 
-4. **Quantize the Model**:
-   ```bash
-   python quantize_onnx.py
-   ```
+# Install lightweight dependencies (NO heavy PyTorch needed!)
+pip install -r requirements_pi.txt
+```
 
-5. **Run Inference**:
-   ```bash
-   python test_onnx.py
-   ```
+### 3. Run Benchmark on Raspberry Pi
+```bash
+python benchmark_pi.py
+```
+
+### 4. Run Real-Time Camera Feed
+```bash
+python pi_camera_test.py
+```
