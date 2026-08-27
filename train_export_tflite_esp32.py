@@ -28,7 +28,8 @@ def load_and_preprocess_dataset(img_dir, target_size=(96, 96)):
             try:
                 img = Image.open(f).convert("RGB")
                 img = img.resize(target_size, Image.Resampling.BILINEAR)
-                arr = np.array(img, dtype=np.float32) / 255.0  # normalize to [0, 1]
+                # MobileNetV2 preprocessing: scale to [-1, 1]
+                arr = (np.array(img, dtype=np.float32) / 127.5) - 1.0
                 images.append(arr)
                 labels.append(label_idx)
             except Exception as e:
@@ -39,28 +40,28 @@ def load_and_preprocess_dataset(img_dir, target_size=(96, 96)):
     return X, y, classes
 
 def build_esp32_model(input_shape=(96, 96, 3), num_classes=2):
-    # Lightweight MobileNetV2 architecture with 96x96 resolution for ESP32 SRAM
+    # Lightweight MobileNetV2 architecture with 0.35 width multiplier for microcontrollers
     base_model = tf.keras.applications.MobileNetV2(
         input_shape=input_shape,
-        alpha=0.35,  # Lightweight 0.35 width multiplier for microcontrollers
+        alpha=0.35,
         include_top=False,
         weights='imagenet'
     )
     base_model.trainable = True
     
-    # Freeze bottom layers, fine-tune top layers
-    for layer in base_model.layers[:-30]:
+    # Train dense head and fine-tune upper layers
+    for layer in base_model.layers[:-40]:
         layer.trainable = False
         
     model = tf.keras.Sequential([
         base_model,
         tf.keras.layers.GlobalAveragePooling2D(),
-        tf.keras.layers.Dropout(0.2),
+        tf.keras.layers.Dropout(0.3),
         tf.keras.layers.Dense(num_classes, activation='softmax')
     ])
     
     model.compile(
-        optimizer=tf.keras.optimizers.Adam(learning_rate=1e-3),
+        optimizer=tf.keras.optimizers.Adam(learning_rate=5e-4),
         loss='sparse_categorical_crossentropy',
         metrics=['accuracy']
     )
@@ -81,7 +82,6 @@ def convert_to_c_header(tflite_path, header_path, variable_name="g_model"):
     lines.append("")
     lines.append(f"alignas(16) const unsigned char {variable_name}[] = {{")
     
-    # Group in chunks of 12 bytes per line
     chunk_size = 12
     for i in range(0, len(hex_array), chunk_size):
         chunk = hex_array[i:i+chunk_size]
@@ -107,10 +107,9 @@ def main():
         return
         
     model = build_esp32_model(input_shape=(96, 96, 3), num_classes=len(classes))
-    model.summary()
     
-    print("\nTraining ESP32 MobileNetV2 (alpha=0.35, 96x96)...")
-    model.fit(X, y, epochs=15, batch_size=8, verbose=1)
+    print("\nTraining ESP32 MobileNetV2 (alpha=0.35, 96x96, [-1,1] scaling)...")
+    model.fit(X, y, epochs=25, batch_size=4, verbose=1)
     
     # Representative dataset generator for INT8 Quantization
     def representative_dataset_gen():
@@ -152,7 +151,7 @@ def main():
     
     correct = 0
     for i in range(len(X)):
-        # Quantize input [0, 1] float to int8
+        # Quantize input [-1, 1] float to int8
         input_data = (X[i] / input_scale + input_zero_point).astype(np.int8)
         input_data = np.expand_dims(input_data, axis=0)
         
@@ -160,7 +159,6 @@ def main():
         interpreter.invoke()
         
         output_data = interpreter.get_tensor(output_details[0]['index'])
-        # Dequantize output
         output_float = (output_data.astype(np.float32) - output_zero_point) * output_scale
         
         pred_class = np.argmax(output_float[0])

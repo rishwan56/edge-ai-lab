@@ -163,21 +163,21 @@ void loop() {
   float input_scale = input_tensor->params.scale;
   int32_t input_zero_point = input_tensor->params.zero_point;
 
-  // Preprocess RGB565 framebuffer into 96x96x3 INT8 input tensor
+  // Preprocess RGB565 framebuffer into 96x96x3 INT8 input tensor [-1, 1]
   int8_t* dst = input_tensor->data.int8;
   uint16_t* src = (uint16_t*)fb->buf;
 
   for (int i = 0; i < kNumRows * kNumCols; i++) {
     uint16_t pixel = src[i];
     // Extract RGB components from RGB565
-    uint8_t r = ((pixel >> 11) & 0x1F) << 3;
-    uint8_t g = ((pixel >> 5) & 0x3F) << 2;
-    uint8_t b = (pixel & 0x1F) << 3;
+    float r = (float)(((pixel >> 11) & 0x1F) << 3);
+    float g = (float)(((pixel >> 5) & 0x3F) << 2);
+    float b = (float)((pixel & 0x1F) << 3);
 
-    // Convert [0..255] float to int8
-    dst[i * 3 + 0] = (int8_t)((r / 255.0f) / input_scale + input_zero_point);
-    dst[i * 3 + 1] = (int8_t)((g / 255.0f) / input_scale + input_zero_point);
-    dst[i * 3 + 2] = (int8_t)((b / 255.0f) / input_scale + input_zero_point);
+    // Normalize to [-1, 1] and quantize to int8
+    dst[i * 3 + 0] = (int8_t)(((r / 127.5f) - 1.0f) / input_scale + input_zero_point);
+    dst[i * 3 + 1] = (int8_t)(((g / 127.5f) - 1.0f) / input_scale + input_zero_point);
+    dst[i * 3 + 2] = (int8_t)(((b / 127.5f) - 1.0f) / input_scale + input_zero_point);
   }
 
   // Release camera buffer
