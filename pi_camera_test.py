@@ -18,7 +18,8 @@ try:
     import onnxruntime as ort
 except ImportError:
     print("Error: 'onnxruntime' is not installed.")
-    print("Run: pip install onnxruntime")
+    print("Run: pip install onn
+    xruntime")
     sys.exit(1)
 
 def preprocess_frame(frame):

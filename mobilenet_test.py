@@ -38,7 +38,6 @@ print("\n\n", "="*10, '\n', 'probabilities = ', probabilities, '\n', "="*10, '\n
 categories = weights.meta["categories"]
 top5_prob, top5_catid = torch.topk(probabilities, 5)
 
-
 print("\nTop 5 Predictions:")
 for i in range(top5_prob.size(0)):
     category = categories[top5_catid[i]]
